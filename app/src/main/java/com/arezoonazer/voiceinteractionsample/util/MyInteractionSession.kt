@@ -1,4 +1,4 @@
-package com.arezoonazer.voiceinteractionsample
+package com.arezoonazer.voiceinteractionsample.util
 
 import android.content.Context
 import android.os.Bundle
