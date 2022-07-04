@@ -5,6 +5,7 @@ import android.os.IBinder
 import android.service.voice.VoiceInteractionService
 import android.util.Log
 import com.arezoonazer.voiceinteractionsample.util.PorcupineHandler
+import com.arezoonazer.voiceinteractionsample.util.startSpeechRecognizerActivity
 
 
 class MyVoiceInteractionService : VoiceInteractionService() {
@@ -19,9 +20,9 @@ class MyVoiceInteractionService : VoiceInteractionService() {
 
     override fun onReady() {
         super.onReady()
-        Log.d(TAG, "onReady: ")
         porcupineHandler.createPorcupine(applicationContext) { keywordIndex: Int ->
             Log.d(TAG, "onReady: $keywordIndex")
+            startSpeechRecognizerActivity()
         }
     }
 
