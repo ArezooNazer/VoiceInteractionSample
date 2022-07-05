@@ -47,19 +47,6 @@ class SpeechRecognizerActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) {
-            // handle permission denied
-        } else {
-            startSpeechRecognitionIfPossible()
-        }
-    }
-
     private fun checkIfRecordAudioPermissionIsGranted() {
         when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) -> {
