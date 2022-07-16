@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">VoiceInteractionSample</string>
+    <string name="how_can_i_help_you">How can I help you?</string>
+    <string name="not_compatible">Google speech to text is not available on your device</string>
+    <string name="show_voice_recognition">Start</string>
 </resources>
