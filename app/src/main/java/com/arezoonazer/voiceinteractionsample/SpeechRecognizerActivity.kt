@@ -27,6 +27,10 @@ class SpeechRecognizerActivity : AppCompatActivity() {
         ActivitySpeechRecognizerBinding.inflate(layoutInflater)
     }
 
+    private val bottomSheetBehavior by lazy(LazyThreadSafetyMode.NONE) {
+        iniBottomSheet()
+    }
+
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -40,8 +44,9 @@ class SpeechRecognizerActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
                 val results = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                val spokenText = results?.get(0)
-                binding.recognizedText.text = spokenText
+                results?.get(0)?.let { spokenText ->
+                    onVoiceRecognized(spokenText)
+                }
             }
         }
 
@@ -49,7 +54,6 @@ class SpeechRecognizerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: ")
         setContentView(binding.root)
-        initBottomSheetBehavior()
         checkIfRecordAudioPermissionIsGranted()
 
         binding.recognizerButton.setOnClickListener {
@@ -143,24 +147,35 @@ class SpeechRecognizerActivity : AppCompatActivity() {
                 )
     }
 
-    private fun initBottomSheetBehavior() {
-        val bottomSheetBehavior = BottomSheetBehavior.from(binding.container)
-        // Expanded by default
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        bottomSheetBehavior.skipCollapsed = true
-        bottomSheetBehavior.addBottomSheetCallback(object :
-            BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    finish()
-                    //Cancels animation on finish()
-                    overridePendingTransition(0, 0)
+    private fun iniBottomSheet(): BottomSheetBehavior<*> {
+        return BottomSheetBehavior.from(binding.container).apply {
+            state = BottomSheetBehavior.STATE_EXPANDED
+            skipCollapsed = true
+            addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        finish()
+                        //Cancels animation on finish()
+                        overridePendingTransition(0, 0)
+                    }
                 }
-            }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            }
-        })
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                }
+            })
+        }
+    }
+
+    private fun onVoiceRecognized(spokenText: String) {
+        binding.recognizedText.text = spokenText
+        if (spokenText.contains("dismiss")) {
+            hideBottomSheet()
+        }
+    }
+
+    private fun hideBottomSheet() {
+        Log.d(TAG, "hideBottomSheet: ")
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
     companion object {
