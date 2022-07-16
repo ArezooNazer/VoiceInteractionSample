@@ -3,20 +3,29 @@ package com.arezoonazer.voiceinteractionsample
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.RecognizerIntent
 import android.util.Log
 import android.view.View
-import android.widget.TextView
+import android.view.WindowInsetsController
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import com.arezoonazer.voiceinteractionsample.databinding.ActivitySpeechRecognizerBinding
 import com.arezoonazer.voiceinteractionsample.util.isSetAsDefaultAssistant
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import java.util.Locale
 
 
 class SpeechRecognizerActivity : AppCompatActivity() {
+
+    private val binding: ActivitySpeechRecognizerBinding by lazy(LazyThreadSafetyMode.NONE) {
+        ActivitySpeechRecognizerBinding.inflate(layoutInflater)
+    }
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -32,19 +41,25 @@ class SpeechRecognizerActivity : AppCompatActivity() {
             if (result.resultCode == RESULT_OK && result.data != null) {
                 val results = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
                 val spokenText = results?.get(0)
-                findViewById<TextView>(R.id.recognizedText).text = spokenText
+                binding.recognizedText.text = spokenText
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: ")
-        setContentView(R.layout.activity_speech_recognizer)
+        setContentView(binding.root)
+        initBottomSheetBehavior()
         checkIfRecordAudioPermissionIsGranted()
 
-        findViewById<View>(R.id.recognizerButton).setOnClickListener {
+        binding.recognizerButton.setOnClickListener {
             checkIfRecordAudioPermissionIsGranted()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideSystemUI()
     }
 
     private fun checkIfRecordAudioPermissionIsGranted() {
@@ -59,10 +74,13 @@ class SpeechRecognizerActivity : AppCompatActivity() {
     }
 
     private fun startSpeechRecognitionIfPossible() {
-        if (isSetAsDefaultAssistant()) {
-            displaySpeechRecognizer()
-        } else {
-            openVoiceInputSetting()
+        when {
+            isSetAsDefaultAssistant().not() -> {
+                openVoiceInputSetting()
+            }
+            else -> {
+                displaySpeechRecognizer()
+            }
         }
     }
 
@@ -93,6 +111,56 @@ class SpeechRecognizerActivity : AppCompatActivity() {
             Log.d(TAG, "displaySpeechRecognizer: $ignored")
             getString(R.string.not_compatible)
         }
+    }
+
+    private fun hideSystemUI() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            setEdgeToEdgeMode()
+        } else {
+            setFullScreen()
+        }
+    }
+
+    private fun setEdgeToEdgeMode() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, binding.root)?.let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior =
+                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun setFullScreen() {
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_LOW_PROFILE
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+    }
+
+    private fun initBottomSheetBehavior() {
+        val bottomSheetBehavior = BottomSheetBehavior.from(binding.container)
+        // Expanded by default
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetBehavior.skipCollapsed = true
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    finish()
+                    //Cancels animation on finish()
+                    overridePendingTransition(0, 0)
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+        })
     }
 
     companion object {

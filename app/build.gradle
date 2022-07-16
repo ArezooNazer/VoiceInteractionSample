@@ -1,10 +1,14 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
     compileSdk 32
+
+    buildFeatures.viewBinding true
 
     defaultConfig {
         applicationId "com.arezoonazer.voiceinteractionsample"
