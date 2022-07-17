@@ -28,7 +28,7 @@ class SpeechRecognizerActivity : AppCompatActivity() {
     }
 
     private val bottomSheetBehavior by lazy(LazyThreadSafetyMode.NONE) {
-        iniBottomSheet()
+        BottomSheetBehavior.from(binding.container)
     }
 
     private val requestPermissionLauncher =
@@ -54,6 +54,7 @@ class SpeechRecognizerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: ")
         setContentView(binding.root)
+        setupBottomSheet()
         checkIfRecordAudioPermissionIsGranted()
 
         binding.recognizerButton.setOnClickListener {
@@ -147,23 +148,20 @@ class SpeechRecognizerActivity : AppCompatActivity() {
                 )
     }
 
-    private fun iniBottomSheet(): BottomSheetBehavior<*> {
-        return BottomSheetBehavior.from(binding.container).apply {
-            state = BottomSheetBehavior.STATE_EXPANDED
-            skipCollapsed = true
-            addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                        finish()
-                        //Cancels animation on finish()
-                        overridePendingTransition(0, 0)
-                    }
+    private fun setupBottomSheet() {
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    finish()
+                    //Cancels animation on finish()
+                    overridePendingTransition(0, 0)
                 }
+            }
 
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                }
-            })
-        }
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+        })
     }
 
     private fun onVoiceRecognized(spokenText: String) {
