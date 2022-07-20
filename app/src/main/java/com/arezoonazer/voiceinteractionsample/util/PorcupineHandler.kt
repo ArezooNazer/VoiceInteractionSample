@@ -42,6 +42,8 @@ object PorcupineHandler {
             }
         } catch (e: PorcupineException) {
             Log.e(TAG, e.toString())
+        } finally {
+            porcupineManager = null
         }
     }
 
