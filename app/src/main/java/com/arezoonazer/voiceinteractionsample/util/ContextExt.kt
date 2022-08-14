@@ -9,13 +9,17 @@ import android.provider.Settings
 import com.arezoonazer.voiceinteractionsample.SpeechRecognizerActivity
 
 fun Context.startSpeechRecognizerActivity() {
-    if (isRunning()) return
+//    if (isRunning()) return
 
-    val intent = Intent(this, SpeechRecognizerActivity::class.java).apply {
+    startActivity(getSpeechRecognizerActivityIntent())
+}
+
+fun Context.getSpeechRecognizerActivityIntent(): Intent {
+    return Intent(this, SpeechRecognizerActivity::class.java).apply {
         flags = FLAG_ACTIVITY_NEW_TASK
     }
-    startActivity(intent)
 }
+
 
 fun Context.isSetAsDefaultAssistant(): Boolean {
     val setting = Settings.Secure.getString(contentResolver, "assistant")
